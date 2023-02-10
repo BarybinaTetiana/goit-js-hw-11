@@ -10,15 +10,3 @@ export function fetchCountries(country) {
     return response.json();
   });
 }
-
-// const endpoint = 'https://restcountries.com/v3.1/name/{name}';
-// const filter = '?fields=name,capital,population,flags,languages';
-
-// export function fetchCountries(name) {
-//   return fetch(`${endpoint}${name}${filter}`).then(res => {
-//     if (!res.ok) {
-//       throw new Error(res.status);
-//     }
-//     return res.json();
-//   });
-// }

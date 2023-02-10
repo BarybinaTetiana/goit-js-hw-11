@@ -1,7 +1,6 @@
 import './css/styles.css';
 import { fetchCountries } from './fetchCountries';
 import debounce from 'lodash.debounce';
-// import { Notify } from 'notiflix/build/notiflix-notify-aio';
 import { Notify } from 'notiflix';
 
 const DEBOUNCE_DELAY = 300;
@@ -24,15 +23,17 @@ function onSearch(e) {
       }
 
       if (data.length > 10) {
-        return Notify.failure(
+        return Notify.info(
           'Too many matches found. Please enter a more specific name.'
         );
       }
+
       if (data.length >= 2 && data.length < 10) {
         createCountryList(data);
         countryInfo.innerHTML = '';
         return;
       }
+      
       if (data.length === 1) {
         countryList.innerHTML = '';
         createCountryInfo(data);
@@ -47,14 +48,14 @@ function onSearch(e) {
 }
 
 function createCountryList(data) {
-  countryList.innerHTML = createCountryList(data);
+  countryList.innerHTML = createMarkupCountryList(data);
 }
 
 function createCountryInfo(data) {
   countryInfo.innerHTML = createMarkupCountryInfo(data);
 }
 
-function createCountryList(data) {
+function createMarkupCountryList(data) {
   return data
     .map(
       ({ name, flags }) =>
@@ -74,8 +75,8 @@ function createMarkupCountryInfo(data) {
         languages,
       }) => `<div class="infolist"><img src="${
         flags.svg
-      }" alt="flag" width="90px"/><h2>${name.official}</h2></div><div>
-    <p><b>Capital:</b> ${capital}</p><p><b>Population:</b> ${population}</p><p><b>Languages:</b>${Object.values(
+      }" alt="flag" width=100px"/><h2>${name.official}</h2></div><div>
+    <p><b>Capital:</b> ${capital}</p><p><b>Population:</b> ${population}</p><p><b>Languages:</b> ${Object.values(
         languages
       )}</p></div>`
     )
