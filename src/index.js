@@ -20,6 +20,7 @@ function onSearch(e) {
       if (searchQuery === '') {
         countryList.innerHTML = '';
         countryInfo.innerHTML = '';
+        return;
       }
 
       if (data.length > 10) {
@@ -33,13 +34,14 @@ function onSearch(e) {
         countryInfo.innerHTML = '';
         return;
       }
-      
+
       if (data.length === 1) {
         countryList.innerHTML = '';
         createCountryInfo(data);
         return;
       }
     })
+
     .catch(error => {
       Notify.failure('Oops, there is no country with that name');
       countryList.innerHTML = '';
