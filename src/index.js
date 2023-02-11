@@ -15,14 +15,14 @@ function onSearch(e) {
   e.preventDefault();
   const searchQuery = e.target.value.trim();
 
+  if (searchQuery === '') {
+    countryList.innerHTML = '';
+    countryInfo.innerHTML = '';
+    return;
+  }
+
   fetchCountries(searchQuery)
     .then(data => {
-      if (searchQuery === '') {
-        countryList.innerHTML = '';
-        countryInfo.innerHTML = '';
-        return;
-      }
-
       if (data.length > 10) {
         return Notify.info(
           'Too many matches found. Please enter a more specific name.'
