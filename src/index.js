@@ -1,86 +1,110 @@
 import './css/styles.css';
-import { fetchCountries } from './fetchCountries';
-import debounce from 'lodash.debounce';
 import { Notify } from 'notiflix';
+import SimpleLightbox from 'simplelightbox';
+import 'simplelightbox/dist/simple-lightbox.min.css';
+import { LoadMoreBtn } from './scripts/loadMoreBtn';
+import { PhotosAPI } from './scripts/api';
 
-const DEBOUNCE_DELAY = 300;
+const API_KEY = '33649994-f80483f60ad654d1c20b01729';
+const searchForm = document.querySelector('#search-form');
+const gallery = document.querySelector('.gallery');
 
-const searchField = document.querySelector('#search-box');
-const countryList = document.querySelector('.country-list');
-const countryInfo = document.querySelector('.country-info');
+searchForm.addEventListener('submit', onSubmitForm);
 
-searchField.addEventListener('input', debounce(onSearch, DEBOUNCE_DELAY));
+const photoAPI = new PhotosAPI();
+const loadMoreBtn = new LoadMoreBtn('load-more', onLoadMoreBtn);
+const simplelightbox = new SimpleLightbox('.gallery a', {
+  captionsData: 'alt',
+  captionDelay: 250,
+  scrollZoom: false,
+});
 
-function onSearch(e) {
+async function onSubmitForm(e) {
   e.preventDefault();
-  const searchQuery = e.target.value.trim();
 
-  if (searchQuery === '') {
-    countryList.innerHTML = '';
-    countryInfo.innerHTML = '';
+  photoAPI.query = e.currentTarget.elements.searchQuery.value.trim();
+
+  if (photoAPI.query === '') {
+    Notify.warning('Please enter text.');
     return;
   }
 
-  fetchCountries(searchQuery)
-    .then(data => {
-      if (data.length > 10) {
-        return Notify.info(
-          'Too many matches found. Please enter a more specific name.'
-        );
-      }
+  photoAPI.resetPage();
 
-      if (data.length >= 2 && data.length < 10) {
-        createCountryList(data);
-        countryInfo.innerHTML = '';
-        return;
-      }
+  try {
+    const { hits, totalHits } = await photoAPI.fetchAPI();
 
-      if (data.length === 1) {
-        countryList.innerHTML = '';
-        createCountryInfo(data);
-        return;
-      }
-    })
+    if (totalHits === 0) {
+      Notify.error(
+        'Sorry, there are no images matching your search query. Please try again.'
+      );
+      gallery.innerHTML = '';
+      loadMoreBtn.hide();
+      return;
+    }
 
-    .catch(error => {
-      Notify.failure('Oops, there is no country with that name');
-      countryList.innerHTML = '';
-      countryInfo.innerHTML = '';
-    });
+    Notify.success(`Hooray! We found '${totalHits}'' images.`);
+    render(hits);
+    simplelightbox.refresh();
+    loadMoreBtn.show();
+  } catch (error) {
+    Notify.failure(
+      'Sorry, there are no images matching your search query. Please try again.'
+    );
+  }
 }
 
-function createCountryList(data) {
-  countryList.innerHTML = createMarkupCountryList(data);
+async function onLoadMoreBtn() {
+  loadMoreBtn.loading();
+
+  try {
+    const { hits } = await photoAPI.fetchAPI();
+    render(hits);
+    loadMoreBtn.endLoading();
+
+    if (hits.length < 40) {
+      loadMoreBtn.hide();
+      Notify.info("We're sorry, but you've reached the end of search results.");
+    }
+  } catch (error) {
+    Notify.failure(
+      'Sorry, there are no images matching your search query. Please try again.'
+    );
+  }
 }
 
-function createCountryInfo(data) {
-  countryInfo.innerHTML = createMarkupCountryInfo(data);
-}
-
-function createMarkupCountryList(data) {
-  return data
-    .map(
-      ({ name, flags }) =>
-        `<li><img src='${flags.svg}' alt="flag" width="50px"/><h2>${name.official}</h2></li>`
-    )
-    .join('');
-}
-
-function createMarkupCountryInfo(data) {
-  return data
-    .map(
-      ({
-        name,
-        capital,
-        population,
-        flags,
-        languages,
-      }) => `<div class="infolist"><img src="${
-        flags.svg
-      }" alt="flag" width=100px"/><h2>${name.official}</h2></div><div>
-    <p><b>Capital:</b> ${capital}</p><p><b>Population:</b> ${population}</p><p><b>Languages:</b> ${Object.values(
-        languages
-      )}</p></div>`
-    )
-    .join('');
+function render(hits) {
+  gallery.innerHTML = '';
+  const photos = hits.map(
+    ({
+      webformatURL,
+      largeImageURL,
+      tags,
+      likes,
+      views,
+      comments,
+      downloads,
+    }) => {
+      return `<div class="photo-card">
+        <a href="${largeImageURL}"> 
+                <img src="${webformatURL}" alt="${tags}" loading="lazy" height = "250" />
+              </a>
+        <div class="info">
+          <p class="info-item">
+            <b> Likes: ${likes}</b>
+          </p>
+          <p class="info-item">
+            <b>Views: ${views}</b>
+          </p>
+          <p class="info-item">
+            <b>Comments: ${comments}</b>
+          </p>
+          <p class="info-item">
+            <b>Downloads: ${downloads}</b>
+          </p>
+        </div>
+      </div>`;
+    }
+  );
+  gallery.insertAdjacentHTML('beforeend', photos.join(''));
 }
