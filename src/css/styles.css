@@ -89,6 +89,39 @@ img {
 }
 
 
+/* KNOPKA UP */
+#scrollUp {
+  position: fixed;
+  right: 10px;
+  bottom: 10px;
+  border-radius: 50%;
+  border: none;
+  padding: 10px;
+  font-size: 25px;
+  cursor: pointer;
+
+  z-index: 1;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: darkcyan;
+  color: white;
+
+  visibility: hidden;
+  opacity: 0;
+  transition: 0.5s linear;
+
+  
+}
+
+#scrollUp.active {
+  visibility: visible;
+  opacity: 1;
+}
+
+
 
 
 

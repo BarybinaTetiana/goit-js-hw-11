@@ -5,6 +5,9 @@ import 'simplelightbox/dist/simple-lightbox.min.css';
 import { LoadMoreBtn } from './scripts/loadMoreBtn';
 import { PhotosAPI } from './scripts/api';
 
+import { onTop } from './scripts/scroll';
+const scrollUpButton = document.getElementById('scrollUp');
+
 const API_KEY = '33649994-f80483f60ad654d1c20b01729';
 const searchForm = document.querySelector('#search-form');
 const gallery = document.querySelector('.gallery');
